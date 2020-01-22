@@ -37,6 +37,8 @@ cat ./data_step1.txt | logstash -f step1.conf
 
 ```
 head  -n 2 ./data_step2.txt | logstash -f step2.conf
+
+cat ../target/logs/metrodemo.log | logstash -f step2.conf
 ```
 
 
@@ -53,8 +55,14 @@ head  -n 2 ./data_step2.txt | logstash -f step2.conf
 
 配置Elasticsearch
 
+
+[amazon_es 插件介绍](https://github.com/awslabs/logstash-output-amazon_es)
+[amazon_es 插件安装](https://aws.amazon.com/cn/premiumsupport/knowledge-center/cloudfront-logs-elasticsearch/)
+
 ```
 head  -n 2 ./data_step2.txt | logstash -f step3.conf
+
+cat ../target/logs/metrodemo.log | logstash -f step3.conf
 ```
 
 ```
@@ -70,6 +78,8 @@ head  -n 2 ./data_step2.txt | logstash -f step3.conf
 ###  安装FileBeat
 [官方安装地址](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-installation.html)
 
+[数据导入教程](https://blog.csdn.net/UbuntuTouch/article/details/100675502)
+
 ```
 filebeat -c filebeat.yml
 
@@ -80,6 +90,13 @@ head  -n 2 ./data_step2.txt | logstash -f step4.conf
 
 
 
+###  Kibana 使用
+
+---------------------------------------
+
+[官方教程](https://www.elastic.co/guide/en/kibana/7.1/tutorial-load-dataset.html)
+
+
 ------------------------------------------
 
 # FAQ
@@ -87,6 +104,11 @@ head  -n 2 ./data_step2.txt | logstash -f step4.conf
 > 1.  Logstash could not be started because there is already another instance using the configured data directory.  If you wish to run multiple instances, you must change the "path.data" setting.
 
   需要kill 现在的logstash 进程， 或者配置path.data， 新启动一个logstash 进程。 
+  
+  
+> 2. logstash 导入ES 时  报401 错误
+
+需要适用amazon_es 插件 配置IAM role（推荐）或者AKSK。
    
   
    

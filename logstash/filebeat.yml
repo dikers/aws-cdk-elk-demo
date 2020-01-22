@@ -2,8 +2,8 @@ filebeat.inputs:
 - type: log
   enabled: true
   paths:
-    - ./data_step2.txt
- 
+    - ../target/logs/metrodemo.log
+
 output.logstash:
   hosts: ["localhost:5044"]
 
