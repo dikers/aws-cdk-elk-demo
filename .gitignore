@@ -77,3 +77,9 @@ build.sh
 /.nb-gradle/
 .idea/
 .idea/*
+
+*/.env/
+.env/*
+*/.env/*
+
+*/cdk.out/
