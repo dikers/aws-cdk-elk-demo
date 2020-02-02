@@ -24,7 +24,7 @@ class CdkInfraStack(core.Stack):
             self, "Rule",
             schedule=events.Schedule.cron(
                 minute='0/5',
-                hour='18',
+                hour='*',
                 month='*',
                 week_day='*',
                 year='*'),
