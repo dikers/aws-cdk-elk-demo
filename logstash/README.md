@@ -4,25 +4,40 @@
 LogStash
 =============================================
 
+### 配置java （1.8以上）
 
-###  安装LogStash
+### 安装
+```shell script
 
-[官网安装地址](https://www.elastic.co/guide/en/logstash/current/installing-logstash.html)
+wget https://artifacts.elastic.co/downloads/logstash/logstash-7.5.2.tar.gz
+tar xzvf logstash-7.5.2.tar.gz
 
-```shell 
+wget  https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.5.2-linux-x86_64.tar.gz
+tar xzvf filebeat-7.5.2-linux-x86_64.tar.gz
 
-#Mac
-brew tap elastic/tap
-brew install elastic/tap/logstash-full
+# amazon-es 插件
+cd logstash-7.5.2
+bin/logstash-plugin install logstash-output-amazon_es
 
-#YUM
-sudo yum install logstash
-
-
-#APT
-sudo apt-get install logstash
 ```
 
+### 添加环境变量
+> export PATH=/home/ec2-user/tools/logstash-7.5.2/bin:$PATH
+> export PATH=/home/ec2-user/tools/filebeat-7.5.2-linux-x86_64:$PATH
+
+```shell script
+vim ~/.bash_profile
+
+source ~/.bash_profile
+```
+
+
+
+
+
+### LogStash
+
+[官网安装地址](https://www.elastic.co/guide/en/logstash/current/installing-logstash.html)
 
 ###  测试LogStash
 
@@ -57,6 +72,7 @@ cat ../target/logs/metrodemo.log | logstash -f step2.conf
 
 
 [amazon_es 插件介绍](https://github.com/awslabs/logstash-output-amazon_es)
+
 [amazon_es 插件安装](https://aws.amazon.com/cn/premiumsupport/knowledge-center/cloudfront-logs-elasticsearch/)
 
 ```
@@ -67,15 +83,16 @@ cat ../target/logs/metrodemo.log | logstash -f step3.conf
 
 ```
   amazon_es {
-      hosts => ["es_host_url"]
-      region => "cn-northwest-1"
-      aws_access_key_id => 'AK'
-      aws_secret_access_key => 'SK'
-      index => "index_demo"
+      hosts => ["_ES_URL_"]
+      region => "_REGION_"
+      aws_access_key_id => '_ES_AK_'
+      aws_secret_access_key => '_ES_SK_'
+      index => "_INDEX_NAME_"
   }
+
 ```
 
-###  安装FileBeat
+### FileBeat
 
 
 
@@ -90,8 +107,14 @@ filebeat -c filebeat.yml
 head  -n 2 ./data_step2.txt | logstash -f step4.conf
 ```
 
-分别启动filebeat 和 logstash 后， 打开data_step2.txt 文件， 复制几行新内容， 可以看到新加的数据导入到ES集群中。 
 
+
+
+### 执行 启动脚本
+```shell script
+./server/start.sh
+
+```
 
 
 ###  Kibana 使用
@@ -99,9 +122,6 @@ head  -n 2 ./data_step2.txt | logstash -f step4.conf
 ---------------------------------------
 
 [官方教程](https://www.elastic.co/guide/en/kibana/7.1/tutorial-load-dataset.html)
-
-
-
 
 
 
