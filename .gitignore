@@ -82,4 +82,10 @@ build.sh
 .env/*
 */.env/*
 
+*/filebeat.yml
+
+*/logstash.conf
+
 */cdk.out/
+/logstash/server/logstash.conf
+/logstash/server/filebeat.yml

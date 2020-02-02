@@ -76,9 +76,13 @@ cat ../target/logs/metrodemo.log | logstash -f step3.conf
 ```
 
 ###  安装FileBeat
+
+
+
 [官方安装地址](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-installation.html)
 
 [数据导入教程](https://blog.csdn.net/UbuntuTouch/article/details/100675502)
+
 
 ```
 filebeat -c filebeat.yml
@@ -97,7 +101,10 @@ head  -n 2 ./data_step2.txt | logstash -f step4.conf
 [官方教程](https://www.elastic.co/guide/en/kibana/7.1/tutorial-load-dataset.html)
 
 
-------------------------------------------
+
+
+
+
 
 # FAQ
 
