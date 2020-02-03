@@ -31,3 +31,7 @@ results = json.loads(tmp_str)
 
 error_count = int(results['count'])
 print("最近5分钟错误次数: {}".format(error_count))
+
+
+response = urllib.request.urlopen("http://www.baidu.com").read()
+print(response)
