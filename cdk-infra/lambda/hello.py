@@ -4,14 +4,17 @@ import os
 import boto3
 
 SNS_TOPIC_ARN = os.environ['SNS_TOPIC_ARN']
+ES_ENDPOINT = os.environ['ES_ENDPOINT']
 
 
 def handler(event, context):
-    # ES_URL = 'https://search-es-demo-rrmy6y3s7fx3svo3m532poauoy.cn-northwest-1.es.amazonaws.com.cn/subway/_count'
 
-    print('arn : {}  '.format(SNS_TOPIC_ARN))
+    print('SNS_TOPIC_ARN : {}  '.format(SNS_TOPIC_ARN))
+    print('ES_ENDPOINT   : {}  '.format(ES_ENDPOINT))
 
-    ES_URL = 'https://vpc-subwayes-adtjf5sflea4zjq5utwap6t27i.cn-northwest-1.es.amazonaws.com.cn/subway/_count'
+    es_url = 'https://{}/subway/_count'.format(ES_ENDPOINT)
+
+    print(es_url)
     formData = {
         "query": {
             "bool": {
@@ -28,7 +31,7 @@ def handler(event, context):
 
     headers = {'Accept-Charset': 'utf-8', 'Content-Type': 'application/json'}
 
-    req = urllib.request.Request(url=ES_URL,
+    req = urllib.request.Request(url=es_url,
                                  data=formData, headers=headers)
 
     response = urllib.request.urlopen(req)
