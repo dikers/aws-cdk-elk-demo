@@ -5,8 +5,19 @@ from aws_cdk import (
     aws_events_targets as targets,
     aws_sns_subscriptions as subs,
     aws_ec2 as ec2,
+    aws_iam as iam,
     aws_elasticsearch as elasticsearch,
     core,
+)
+
+from aws_cdk.aws_iam import (
+    Role,
+    Policy,
+    ServicePrincipal,
+    CfnInstanceProfile,
+    ManagedPolicy,
+    Effect,
+    PolicyStatement,
 )
 
 from constant import Constant
@@ -46,7 +57,38 @@ class CdkInfraStack(core.Stack):
             subnet_type=ec2.SubnetType.PRIVATE
         )
 
-        # step 2. 堡垒机
+        # step 2. 访问ES 集群需要的 iam_instance_profile
+        #  action -> statement -> policy -> role -> instance profile ->  attach ec2
+
+        actions = ["ec2:CreateNetworkInterface",
+                   "ec2:DeleteNetworkInterface",
+                   "ec2:DescribeNetworkInterfaces",
+                   "ec2:ModifyNetworkInterfaceAttribute",
+                   "ec2:DescribeSecurityGroups",
+                   "ec2:DescribeSubnets",
+                   "ec2:DescribeVpcs"]
+
+        policyStatement = PolicyStatement(actions=actions, effect=Effect.ALLOW)
+        policyStatement.add_all_resources()
+        policyStatement.sid = "Stmt1480452973134"
+
+        policy = Policy(self, "CDK_EC2AccessElasticSearchPolicy", policy_name="CDK_EC2AccessElasticSearchPolicy")
+
+        policy.add_statements(policyStatement)
+
+        access_es_role = Role(
+            self, 'CDK_EC2AccessElasticSearchRole',
+            role_name='CDK_EC2AccessElasticSearchRole',
+            assumed_by=ServicePrincipal('ec2.amazonaws.com.cn')
+        )
+        policy.attach_to_role(access_es_role)
+        instance_profile = CfnInstanceProfile(self, "CDK_EC2AccessElasticSearchInstanceProfile",
+                instance_profile_name="CDK_EC2AccessElasticSearchInstanceProfile",
+                roles=[access_es_role.role_name])
+
+        core.CfnOutput(self, "access_es_role_arn", value=access_es_role.role_arn)
+
+        # step 3. 创建堡垒机
         bastion = ec2.BastionHostLinux(self, "myBastion",
                                        vpc=vpc,
                                        subnet_selection=ec2.SubnetSelection(
@@ -55,10 +97,13 @@ class CdkInfraStack(core.Stack):
                                        instance_type=ec2.InstanceType(instance_type_identifier="m4.large"))
         bastion.instance.instance.add_property_override("KeyName", Constant.EC2_KEY_NAME)
         bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(22), "Internet access SSH")
+        bastion.instance.instance.iam_instance_profile = instance_profile.instance_profile_name
+        bastion.instance.instance.image_id = 'ami-01430e4b8c4efbd17'
+
+        core.CfnOutput(self, "instance-profile-name", value=instance_profile.instance_profile_name)
 
 
-
-        # step 3. ES
+        # step 4. ES
         es_arn = self.format_arn(
             service="es",
             resource="domain",
@@ -96,8 +141,6 @@ class CdkInfraStack(core.Stack):
                                           "instanceType": 'm4.large.elasticsearch',
                                           "zoneAwarenessEnabled": False}
         )
-        # es.add_depends_on()
-
         es.access_policies = {
             "Version": "2012-10-17",
             "Statement": [
@@ -111,12 +154,11 @@ class CdkInfraStack(core.Stack):
                 }
             ]
         }
-
         core.CfnOutput(self, "es_domain_endpoint", value=es.attr_domain_endpoint)
 
 
 
-        # step 4.  SNS
+        # step 5.  SNS
         topic = sns.Topic(
             self, "topic"
         )
@@ -125,7 +167,7 @@ class CdkInfraStack(core.Stack):
         # 设置SNS endpoint, 让lambda 可以从vpc 内部访问
         vpc.add_interface_endpoint("SNSEndpoint", service=ec2.InterfaceVpcEndpointAwsService.SNS)
 
-        # step 5. Lambda
+        # step 6. Lambda
         lambdaFn = lambda_.Function(
             self, "Singleton",
             code=lambda_.Code.asset('lambda'),
@@ -141,7 +183,7 @@ class CdkInfraStack(core.Stack):
             }
         )
 
-        # step 6. Cloud watch event
+        # step 7. Cloud watch event
         rule = events.Rule(
             self, "Rule",
             schedule=events.Schedule.cron(

@@ -9,11 +9,11 @@ setuptools.setup(
     name="cdk_infra",
     version="0.0.1",
 
-    description="An empty CDK Python app",
+    description="An CDK Python app",
     long_description=long_description,
     long_description_content_type="text/markdown",
 
-    author="author",
+    author="ZhangLiang",
 
     package_dir={"": "cdk_infra"},
     packages=setuptools.find_packages(where="cdk_infra"),
