@@ -18,11 +18,53 @@ class CdkInfraStack(core.Stack):
         super().__init__(scope, id, **kwargs)
 
         # step 1. VPC
-        vpc = ec2.Vpc.from_lookup(self, "VPC", vpc_id=Constant.VPC_ID)
+        # vpc = ec2.Vpc.from_lookup(self, "VPC", vpc_id='')
+        vpc = ec2.Vpc(self, "VPC",
+                max_azs=2,
+                cidr="10.10.0.0/16",
+                # configuration will create 3 groups in 2 AZs = 6 subnets.
+                subnet_configuration=[ec2.SubnetConfiguration(
+                    subnet_type=ec2.SubnetType.PUBLIC,
+                    name="Public",
+                    cidr_mask=24
+                ), ec2.SubnetConfiguration(
+                    subnet_type=ec2.SubnetType.PRIVATE,
+                    name="Private",
+                    cidr_mask=24
+                ),
+                # ec2.SubnetConfiguration(
+                #     subnet_type=ec2.SubnetType.ISOLATED,
+                #     name="DB",
+                #     cidr_mask=24
+                # )
+                ],
+                # nat_gateway_provider=ec2.NatProvider.gateway(),
+                # nat_gateways=2,
+                )
 
-        # step 2. ES
-        es_cluster_arn = 'arn:{}:es:{}:{}:domain/{}/*'.format(Constant.AWS_GLOBAL_PREFIX, Constant.REGION_NAME,
-                                                Constant.AWS_ACCOUNT, Constant.ES_CLUSTER_NAME)
+        selection = vpc.select_subnets(
+            subnet_type=ec2.SubnetType.PRIVATE
+        )
+
+        # step 2. 堡垒机
+        bastion = ec2.BastionHostLinux(self, "myBastion",
+                                       vpc=vpc,
+                                       subnet_selection=ec2.SubnetSelection(
+                                           subnet_type=ec2.SubnetType.PUBLIC),
+                                       instance_name="BastionHost",
+                                       instance_type=ec2.InstanceType(instance_type_identifier="m4.large"))
+        bastion.instance.instance.add_property_override("KeyName", Constant.EC2_KEY_NAME)
+        bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(22), "Internet access SSH")
+
+
+
+        # step 3. ES
+        es_arn = self.format_arn(
+            service="es",
+            resource="domain",
+            sep="/",
+            resource_name=Constant.ES_CLUSTER_NAME
+        )
 
         sg_es_cluster = ec2.SecurityGroup(
             self,
@@ -43,9 +85,9 @@ class CdkInfraStack(core.Stack):
             node_to_node_encryption_options={"enabled": False},
             vpc_options={
                 "securityGroupIds": [sg_es_cluster.security_group_id],
-                "subnetIds": [Constant.SUBNET_1_ID]
+                "subnetIds": selection.subnet_ids[:1]
             },
-            ebs_options={"ebsEnabled": True, "volumeSize": 30, "volumeType": "gp2"},
+            ebs_options={"ebsEnabled": True, "volumeSize": 12, "volumeType": "gp2"},
             elasticsearch_cluster_config={
                                           # "dedicatedMasterCount": 3,
                                           # "dedicatedMasterEnabled": True,
@@ -54,6 +96,7 @@ class CdkInfraStack(core.Stack):
                                           "instanceType": 'm4.large.elasticsearch',
                                           "zoneAwarenessEnabled": False}
         )
+        # es.add_depends_on()
 
         es.access_policies = {
             "Version": "2012-10-17",
@@ -64,12 +107,16 @@ class CdkInfraStack(core.Stack):
                         "AWS": "*"
                     },
                     "Action": "es:*",
-                    "Resource": es_cluster_arn
+                    "Resource": "{}/*".format(es_arn)
                 }
             ]
         }
 
-        # step 3.  SNS
+        core.CfnOutput(self, "es_domain_endpoint", value=es.attr_domain_endpoint)
+
+
+
+        # step 4.  SNS
         topic = sns.Topic(
             self, "topic"
         )
@@ -78,7 +125,7 @@ class CdkInfraStack(core.Stack):
         # 设置SNS endpoint, 让lambda 可以从vpc 内部访问
         vpc.add_interface_endpoint("SNSEndpoint", service=ec2.InterfaceVpcEndpointAwsService.SNS)
 
-        # step 4. Lambda
+        # step 5. Lambda
         lambdaFn = lambda_.Function(
             self, "Singleton",
             code=lambda_.Code.asset('lambda'),
@@ -94,13 +141,13 @@ class CdkInfraStack(core.Stack):
             }
         )
 
-        # step 5. Cloud watch event
+        # step 6. Cloud watch event
         rule = events.Rule(
             self, "Rule",
             schedule=events.Schedule.cron(
                 minute='0/5',
                 hour='10',
-                month='*',
+                month='1',
                 week_day='*',
                 year='*'),
         )
