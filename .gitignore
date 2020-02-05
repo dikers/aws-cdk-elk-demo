@@ -63,7 +63,7 @@ __pycache__/
 /dataset/*
 
 /raw-data/*
-
+*/cdk.context.json
 /output/*
 
 build.sh
