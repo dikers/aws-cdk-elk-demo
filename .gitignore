@@ -64,6 +64,7 @@ __pycache__/
 
 /raw-data/*
 */cdk.context.json
+cdk-infra/cdk.context.json
 /output/*
 
 build.sh
