@@ -76,6 +76,23 @@
     REGION_NAME = 'cn-northwest-1'
 ```
 
+配置报警时间， 每隔指定时间， 错误日志的数量达到规定的量， 就会给上面设置的邮箱发送通知
+```shell script
+
+ # step 7. Cloud watch event
+        rule = events.Rule(
+            self, "Rule",
+            schedule=events.Schedule.cron(
+                minute='0/5',
+                hour='*',
+                month='*',
+                week_day='*',
+                year='*'),
+        )
+
+```
+
+
 
 ### 4. 配置CDK 开发环境
 
