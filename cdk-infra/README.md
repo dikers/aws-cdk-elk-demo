@@ -72,10 +72,9 @@ Enjoy!
 ### [CDK python API ](https://docs.aws.amazon.com/cdk/api/latest/python/index.html)
 
 
-###
+### Install Python Package
 
-```shell script`
-
+```shell script
 pip install  aws_cdk.aws_events
 pip install  aws_cdk.aws_lambda
 pip install  aws_cdk.aws_sns
