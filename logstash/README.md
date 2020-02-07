@@ -1,7 +1,5 @@
---------------------------------
 
 # 安装Logstash + filebeat  & AMI 制作
-
 
 
 [Logstash 官网安装地址](https://www.elastic.co/guide/en/logstash/current/installing-logstash.html)
@@ -17,7 +15,10 @@
 
 [官方参考文档](https://docs.aws.amazon.com/zh_cn/AWSEC2/latest/UserGuide/creating-an-ami-ebs.html)
 
+
 ### 配置java （1.8以上）
+
+
 
 ### 安装步骤
 ```shell script
@@ -50,19 +51,17 @@ source ~/.bash_profile
 ```
 
 
-### Copy 脚本文件
+### 复制文件到服务器上
 
-将 [./logstash/server/](../logstash/server) 文件夹下面所有文件 copy到服务器上
+将 [logstash/server](../logstash/server) 文件夹下面所有文件复制到服务器上。
 
-将 [./web-demo/](../web-demo/) Springboot 项目编译， 然后将jar 上传到 Ec2上 (实际使用过程中， 可以配置CodeDeploy). 
+将 [web-demo](../web-demo/) Springboot 项目编译， 然后将jar 上传到 Ec2上 (实际使用过程中， 可以配置CodeDeploy)。 
 
-完成测试以后，制作镜像。 
+镜像的目录结构 可以参考 **ami-07295b0a0b6ce1c9c**，完成测试以后，制作镜像。 
 
 
 
-------------------------------------------------
 #  LogStash 使用方法
-
 
 ####  测试LogStash
 
@@ -98,12 +97,6 @@ output {
           "host" => "localhost",
       "@version" => "1"
 }
-{
-       "message" => "filebeat",
-    "@timestamp" => 2020-02-05T08:53:01.208Z,
-          "host" => "localhost",
-      "@version" => "1"
-}
 ```
 
 
@@ -120,7 +113,7 @@ head  -n 2 ./data_step2.txt | logstash -f step2.conf
 
 原始数据
 ```shell script
-2020/01/20-20:07:29|com.xxx.yyy.service.LvBoServiceImpl~getActiveStatus~-981616682~设备标识~172.19.71.224~9999~执行成功~T~3
+2020/01/20-20:07:29|com.xxx.yyy.service.DemoImpl~getActiveStatus~-98166682~标识~172.19.71.224~001~执行成功~T~3
 ```
 
 grok 转换语法
@@ -144,11 +137,11 @@ grok 转换语法
       "error_msg" => "执行成功",
          "status" => "T",
          "method" => "getActiveStatus",
-        "link_id" => -981616682,
+        "link_id" => -98166682,
      "@timestamp" => 2020-02-05T09:06:51.625Z,
     "create_time" => 2020-01-20T12:07:29.000Z,
-      "device_id" => "设备标识",
-     "class_name" => "com.xxx.yyy.service.LvBoServiceImpl"
+      "device_id" => "标识",
+     "class_name" => "com.xxx.yyy.service.DemoImpl"
 }
 ```
 
@@ -232,10 +225,10 @@ filebeat -c filebeat.yml
 
 * 将./logstash/server  文件夹内容复制到服务器上
 * 添加环境变量
+
+在服务器上运行， 推荐使用Role，在[CDK模块](../cdk-infra/cdk_infra/cdk_infra_stack.py)中， 会自动生成这些Role。 
 ```shell script
 export _ES_URL_='xxxxx'
-export _ES_AK_='xxxxx'
-export _ES_SK_='xxxxx'
 export _INDEX_NAME_='xxxxx'
 export _REGION_='xxxxx'
 export _LOG_PATH_='xxxxx'

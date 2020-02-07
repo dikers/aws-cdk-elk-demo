@@ -26,7 +26,7 @@
 
 ### [Logstash 模块](./logstash/)
 
-  Logstash + Filebeat 的安装和使用步骤， 以及如何制作镜像 
+  Logstash + Filebeat 的安装和使用方法，以及如何制作镜像。
   
 
 ### [cdk-infra](./cdk-infra/)
@@ -79,7 +79,8 @@
 
 ### 4. 配置CDK 开发环境
 
-如果第一次使用CDK ， 请先阅读以下两个文档， 并且做workshop训练。 
+如果第一次使用CDK ，请先阅读以下两个文档. 
+
 [CDK 官方文档 ](https://docs.aws.amazon.com/cdk/latest/guide/home.html)
   
 [CDK Workshop](https://cdkworkshop.com/)   
