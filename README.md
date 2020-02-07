@@ -39,7 +39,7 @@
 
 ### 1. 配置秘钥  id_rsa.pem  
 登录堡垒机用到的秘钥， 请选择对应的区域生成，并妥善保管， 名称默认是id_rsa, 如果修改成其他名称， 请到[constant.py](./cdk-infra/constant.py) 中修改对应名称。 
-![image](./images/001.png)
+![image](./images/002.png)
 
 ### 2. 镜像制作
 
