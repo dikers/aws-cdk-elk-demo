@@ -43,6 +43,10 @@ At this point you can now synthesize the CloudFormation template for this code.
 $ cdk synth
 ```
 
+```
+$ cdk bootstrap  
+```
+
 To add additional dependencies, for example other CDK libraries, just add
 them to your `setup.py` file and rerun the `pip install -r requirements.txt`
 command.
@@ -58,12 +62,8 @@ command.
 Enjoy!
 
 
-```
-$ cdk bootstrap --profile 'region' 
-```
 
-
-### [CDK 官方文档 ](https://docs.aws.amazon.com/cdk/latest/guide/home.html)
+### [CDK Document](https://docs.aws.amazon.com/cdk/latest/guide/home.html)
 
 ### [CDK Workshop](https://cdkworkshop.com/)
 
