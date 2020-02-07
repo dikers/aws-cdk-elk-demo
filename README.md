@@ -1,6 +1,5 @@
 
-## 免责说明
-----------------------------------------
+# 免责说明
 
 建议测试过程中使用此方案，生产环境使用请自行考虑评估。
 当您对方案需要进一步的沟通和反馈后，可以联系 nwcd_labs@nwcdcloud.cn 获得更进一步的支持。
@@ -9,19 +8,16 @@
 
 
 # 项目介绍
-------------------------------------
 
   本项目是演示如何用AWS CDK快速搭建 Elasticsearch + Logstash + Filebeat + Kinaba 的日志分析报警系统。 
   
   
 # 项目架构图
-------------------------------------------------  
   ![image](./images/001.png)
   
   
   
 # 项目模块说明
-------------------------------------------------
 
 ### [web-demo 模块](./web-demo/)
 
@@ -93,8 +89,11 @@
 
 ```
 $ cdk bootstrap --profile 'region' 
+
+# 部署
 $ cdk deploy --profile 'region'
 
+# 销毁
 $ cdk destory --profile 'region'
 ```
 cdk 代码的说明，在[cdk_infra_stack.py](./cdk-infra/cdk_infra/cdk_infra_stack.py) 文件注释中。 
@@ -106,7 +105,7 @@ cdk 代码的说明，在[cdk_infra_stack.py](./cdk-infra/cdk_infra/cdk_infra_st
 
 ### 6. 验证
 
-第一步中生成的秘钥 保存在这里 ~/id_rsa.pem 权限400
+第一步中生成的秘钥 保存在~/id_rsa.pem 设置权限400
 
 ```shell script
 chmod 400 ~/id_rsa.pem
@@ -139,22 +138,12 @@ cdk-infra.CmdSshProxyToKinana = ssh -i "~/id_rsa.pem" ec2-user@ec2-161-189-69-79
 # 执行完上面的命令后， 在浏览器中打开下面的连接
 cdk-infra.UrlKibana = https://localhost:9200/_plugin/kibana/app/kibana
 
-
-Stack ARN:
-arn:aws-cn:cloudformation:cn-northwest-1:690704700794:stack/cdk-infra/97ddf4d0-49b7-11ea-ad72-0a88b66ce334
-
-
 ```
 
-
-  
-
-
-  
   
   
 # 参考文档
--------------------------------------
+
 #### [CDK 官方文档 ](https://docs.aws.amazon.com/cdk/latest/guide/home.html)
   
 #### [CDK Workshop](https://cdkworkshop.com/)
