@@ -90,3 +90,5 @@ build.sh
 */cdk.out/
 /logstash/server/logstash.conf
 /logstash/server/filebeat.yml
+/logstash/server/logs/*
+/logstash/server/data/*

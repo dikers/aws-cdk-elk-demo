@@ -61,3 +61,31 @@ Enjoy!
 ```
 $ cdk bootstrap --profile 'region' 
 ```
+
+
+### [CDK 官方文档 ](https://docs.aws.amazon.com/cdk/latest/guide/home.html)
+
+### [CDK Workshop](https://cdkworkshop.com/)
+
+### [CDK Examples Repository](https://github.com/aws-samples/aws-cdk-examples)
+
+### [CDK python API ](https://docs.aws.amazon.com/cdk/api/latest/python/index.html)
+
+
+###
+
+```shell script`
+
+pip install  aws_cdk.aws_events
+pip install  aws_cdk.aws_lambda
+pip install  aws_cdk.aws_sns
+pip install  aws_cdk.aws_events_targets
+pip install  aws_cdk.aws_sns_subscriptions
+pip install  aws_cdk.aws_ec2
+pip install  aws_cdk.aws_iam
+pip install  aws_cdk.core
+pip install  aws_cdk.aws_elasticsearch
+pip install  aws_cdk.aws_elasticloadbalancingv2
+pip install  aws_cdk.aws_autoscaling
+
+```

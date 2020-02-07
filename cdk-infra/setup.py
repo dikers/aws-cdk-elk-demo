@@ -24,7 +24,15 @@ setuptools.setup(
         "aws-cdk.aws_sqs",
         "aws-cdk.aws_sns",
         "aws-cdk.aws_sns_subscriptions",
-        "aws-cdk.aws_s3",
+        "aws-cdk.aws_events",
+        "aws-cdk.aws_lambda",
+        "aws-cdk.aws_events_targets",
+        "aws-cdk.aws_ec2",
+        "aws-cdk.aws_elasticsearch",
+        "aws-cdk.aws_elasticloadbalancingv2",
+        "aws-cdk.aws_autoscaling",
+
+
     ],
 
     python_requires=">=3.6",

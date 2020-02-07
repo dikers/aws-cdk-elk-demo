@@ -1,6 +1,6 @@
 --------------------------------
 
-# 安装Logstash + filebeat
+# 安装Logstash + filebeat  & AMI 制作
 
 
 
@@ -12,6 +12,10 @@
 
 [amazon_es 插件安装](https://aws.amazon.com/cn/premiumsupport/knowledge-center/cloudfront-logs-elasticsearch/)
 
+
+### 启动一个Ec2 实例用于制作AMI
+
+[官方参考文档](https://docs.aws.amazon.com/zh_cn/AWSEC2/latest/UserGuide/creating-an-ami-ebs.html)
 
 ### 配置java （1.8以上）
 
@@ -44,6 +48,17 @@ vim ~/.bash_profile
 
 source ~/.bash_profile
 ```
+
+
+### Copy 脚本文件
+
+将 [./logstash/server/](../logstash/server) 文件夹下面所有文件 copy到服务器上
+
+将 [./web-demo/](../web-demo/) Springboot 项目编译， 然后将jar 上传到 Ec2上 (实际使用过程中， 可以配置CodeDeploy). 
+
+完成测试以后，制作镜像。 
+
+
 
 ------------------------------------------------
 #  LogStash 使用方法

@@ -13,33 +13,16 @@ filebeat_conf=./filebeat.yml
 #cat ${logstash_conf}
 #echo '-------------------filebeat conf before'
 #cat ${filebeat_conf}
+#vpc-cdk-es-demo-w2a7o4s272gfzo2f3rn5mrlycu.cn-northwest-1.es.amazonaws.com.cn cn-northwest-1 /home/ec2-user/web-app/* log_index
 
 
-# 从环境变量里面输入
-# export _ES_URL_='xxxxx'
-# export _ES_AK_='xxxxx'
-# export _ES_SK_='xxxxx'
-# export _INDEX_NAME_='xxxxx'
-# export _REGION_='xxxxx'
-# export _LOG_PATH_='xxxxx'
-
-
-echo '_ES_URL_' : ${_ES_URL_}
-echo '_ES_AK_' : ${_ES_AK_}
-echo '_ES_SK_' : ${_ES_SK_}
-echo '_INDEX_NAME_' : ${_INDEX_NAME_}
-echo '_REGION_' : ${_REGION_}
-echo '_LOG_PATH_' : ${_LOG_PATH_}
-
-
-
-sed -i "" "s@_ES_URL_@${_ES_URL_}@g"  ${logstash_conf}
+sed -i "" "s@_ES_URL_@$1@g"  ${logstash_conf}
 sed -i "" "s@_ES_AK_@${_ES_AK_}@g"  ${logstash_conf}
 sed -i "" "s@_ES_SK_@${_ES_SK_}@g"  ${logstash_conf}
-sed -i "" "s@_INDEX_NAME_@${_INDEX_NAME_}@g"  ${logstash_conf}
-sed -i "" "s@_REGION_@${_REGION_}@g"  ${logstash_conf}
+sed -i "" "s@_INDEX_NAME_@$4@g"  ${logstash_conf}
+sed -i "" "s@_REGION_@$2@g"  ${logstash_conf}
 
-sed -i "" "s@_LOG_PATH_@${_LOG_PATH_}@g"  ${filebeat_conf}
+sed -i "" "s@_LOG_PATH_@$3@g"  ${filebeat_conf}
 
 
 echo '------------------- logstash conf  after'

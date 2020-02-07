@@ -16,30 +16,31 @@ public class TestController {
 	@ResponseBody
 	@RequestMapping("/")
 	public String index(Integer total, Integer tps) {
-		if (tps == null) {
-			tps = 1;
-		}
-		if (tps > 100) {
-			tps = 100;
-		}
+
+//		if (tps == null) {
+//			tps = 1;
+//		}
+//		if (tps > 100) {
+//			tps = 100;
+//		}
 		if (total == null) {
 			total = 1;
 		}
 		if (total > 100) {
 			total = 100;
 		}
-		int sleep = 1000 / tps;
-		for (int i = 1; i <= total; i++) {
+//		int sleep = 1000 / tps;
+		for (int i = 1; i <= total* 10; i++) {
 			logger.info(disposeLog());
-			if (i < total) {
-				try {
-					Thread.sleep(sleep);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
+//			if (i < total) {
+//				try {
+//					Thread.sleep(sleep);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//			}
 		}
-		return "OK";
+		return "Send "+total+" messages";
 	}
 
 	private String disposeLog() {

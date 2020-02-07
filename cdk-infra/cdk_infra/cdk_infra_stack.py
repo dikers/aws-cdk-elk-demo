@@ -7,6 +7,8 @@ from aws_cdk import (
     aws_ec2 as ec2,
     aws_iam as iam,
     aws_elasticsearch as elasticsearch,
+    aws_elasticloadbalancingv2 as elb,
+    aws_autoscaling as autoscaling,
     core,
 )
 
@@ -15,12 +17,17 @@ from aws_cdk.aws_iam import (
     Policy,
     ServicePrincipal,
     CfnInstanceProfile,
-    ManagedPolicy,
     Effect,
     PolicyStatement,
 )
-
 from constant import Constant
+
+my_ami = ec2.GenericLinuxImage({
+    Constant.REGION_NAME: Constant.EC2_AMI_ID
+})
+
+with open("./user_data/user_data.sh") as f:
+    user_data_content = f.read()
 
 
 class CdkInfraStack(core.Stack):
@@ -86,23 +93,6 @@ class CdkInfraStack(core.Stack):
                 instance_profile_name="CDK_EC2AccessElasticSearchInstanceProfile",
                 roles=[access_es_role.role_name])
 
-        core.CfnOutput(self, "access_es_role_arn", value=access_es_role.role_arn)
-
-        # step 3. 创建堡垒机
-        bastion = ec2.BastionHostLinux(self, "myBastion",
-                                       vpc=vpc,
-                                       subnet_selection=ec2.SubnetSelection(
-                                           subnet_type=ec2.SubnetType.PUBLIC),
-                                       instance_name="BastionHost",
-                                       instance_type=ec2.InstanceType(instance_type_identifier="m4.large"))
-        bastion.instance.instance.add_property_override("KeyName", Constant.EC2_KEY_NAME)
-        bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(22), "Internet access SSH")
-        bastion.instance.instance.iam_instance_profile = instance_profile.instance_profile_name
-        bastion.instance.instance.image_id = 'ami-01430e4b8c4efbd17'
-
-        core.CfnOutput(self, "instance-profile-name", value=instance_profile.instance_profile_name)
-
-
         # step 4. ES
         es_arn = self.format_arn(
             service="es",
@@ -154,7 +144,7 @@ class CdkInfraStack(core.Stack):
                 }
             ]
         }
-        core.CfnOutput(self, "es_domain_endpoint", value=es.attr_domain_endpoint)
+        core.CfnOutput(self, "Es_Domain_Endpoint", value=es.attr_domain_endpoint)
 
 
 
@@ -199,5 +189,70 @@ class CdkInfraStack(core.Stack):
         topic.grant_publish(lambdaFn)
 
 
+
+
+        # Create ALB
+        alb = elb.ApplicationLoadBalancer(self, "myALB",
+                                          vpc=vpc,
+                                          internet_facing=True,
+                                          load_balancer_name="myALB"
+                                          )
+        alb.connections.allow_from_any_ipv4(
+            ec2.Port.tcp(80), "Internet access ALB 80")
+        listener = alb.add_listener("my80",
+                                    port=80,
+                                    open=True)
+
+        # Create Autoscaling Group with fixed 2*EC2 hosts
+
+        user_data = user_data_content.format(es.attr_domain_endpoint, Constant.REGION_NAME,
+                                                                  Constant.ES_LOG_PATH, Constant.ES_INDEX_NAME)
+
+        # step 3. 创建堡垒机
+        bastion = ec2.BastionHostLinux(self, "myBastion",
+                                       vpc=vpc,
+                                       subnet_selection=ec2.SubnetSelection(
+                                           subnet_type=ec2.SubnetType.PUBLIC),
+                                       instance_name="BastionHost",
+                                       instance_type=ec2.InstanceType(instance_type_identifier="m4.large"))
+        bastion.instance.instance.add_property_override("KeyName", Constant.EC2_KEY_NAME)
+        bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(22), "Internet access SSH")
+        bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(8080), "Internet access HTTP")
+        bastion.instance.instance.iam_instance_profile = instance_profile.instance_profile_name
+        bastion.instance.instance.image_id = Constant.EC2_AMI_ID
+        #堡垒机的user_data 只能执行一次， 如果要执行多次， 请参考 https://amazonaws-china.com/premiumsupport/knowledge-center/execute-user-data-ec2/?nc1=h_ls
+        bastion.instance.add_user_data("/home/ec2-user/start.sh {}  {} '{}' {}".
+                                       format(es.attr_domain_endpoint, Constant.REGION_NAME,
+                                        Constant.ES_LOG_PATH, Constant.ES_INDEX_NAME))
+
+        asg = autoscaling.AutoScalingGroup(self, "myASG",
+                                                vpc=vpc,
+                                                vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC), # PUBLIC for debug
+                                                instance_type=ec2.InstanceType(instance_type_identifier="m4.large"),
+                                                machine_image=my_ami,
+                                                key_name=Constant.EC2_KEY_NAME,
+                                                user_data=ec2.UserData.custom(user_data),
+                                                desired_capacity=1,
+                                                min_capacity=1,
+                                                max_capacity=1,
+                                                role=access_es_role
+                                                )
+
+        # asg.connections.allow_from(alb, ec2.Port.tcp(8080), "ALB access 80 port of EC2 in Autoscaling Group")
+        asg.connections.allow_from_any_ipv4(ec2.Port.tcp(8080), "Internet access HTTP for test")
+        asg.connections.allow_from_any_ipv4(ec2.Port.tcp(22), "Internet access SSH")  # for debug
+        listener.add_targets("addTargetGroup",
+                             port=8080,
+                             targets=[asg])
+
+        core.CfnOutput(self, "UrlLoad_Balancer", value='https://{}'.format(alb.load_balancer_dns_name))
+        core.CfnOutput(self, "UrlKibana", value='https://localhost:9200/_plugin/kibana/app/kibana')
+        core.CfnOutput(self, "UrlBastion", value='http://{}:8080'.format(bastion.instance_public_dns_name))
+
+        # core.CfnOutput(self, "CmdUser_Data", value=user_data)
+        core.CfnOutput(self, "CmdSshProxyToKinana", value='ssh -i "~/id_rsa.pem" ec2-user@{}  -N -L 9200:{}:443'.format(bastion.instance_public_dns_name,es.attr_domain_endpoint ))
+        core.CfnOutput(self, "CmdGetCountIndex", value='curl https://{}/{}/_count'.format(es.attr_domain_endpoint, Constant.ES_INDEX_NAME))
+
+        core.CfnOutput(self, "CmdSshToBastion", value='ssh -i "~/id_rsa.pem" ec2-user@{}'.format(bastion.instance_public_dns_name))
 
 
