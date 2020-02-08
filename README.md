@@ -170,6 +170,8 @@ cdk-infra.UrlKibana = https://localhost:9200/_plugin/kibana/app/kibana
   
 #### [CDK python API ](https://docs.aws.amazon.com/cdk/api/latest/python/index.html)
 
+#### [Logstash 官网文档](https://www.elastic.co/guide/en/logstash/current/index.html)
+
 #### [Logstash 官网安装地址](https://www.elastic.co/guide/en/logstash/current/installing-logstash.html)
 
 #### [Filebeat 官方安装地址](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-installation.html)
@@ -179,3 +181,5 @@ cdk-infra.UrlKibana = https://localhost:9200/_plugin/kibana/app/kibana
 #### [amazon_es 插件安装](https://aws.amazon.com/cn/premiumsupport/knowledge-center/cloudfront-logs-elasticsearch/)
 
 #### [Kibana 官方教程](https://www.elastic.co/guide/en/kibana/7.1/tutorial-load-dataset.html)
+
+#### [AWS Elastic Search配置指南](http://aws.amazon.bokecc.com/news/show-1087.html)

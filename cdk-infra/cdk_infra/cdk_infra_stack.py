@@ -5,7 +5,6 @@ from aws_cdk import (
     aws_events_targets as targets,
     aws_sns_subscriptions as subs,
     aws_ec2 as ec2,
-    aws_iam as iam,
     aws_elasticsearch as elasticsearch,
     aws_elasticloadbalancingv2 as elb,
     aws_autoscaling as autoscaling,
@@ -22,9 +21,14 @@ from aws_cdk.aws_iam import (
 )
 from constant import Constant
 
-my_ami = ec2.GenericLinuxImage({
-    Constant.REGION_NAME: Constant.EC2_AMI_ID
-})
+
+# 中国两个区域会用到两个ami_id
+ami_map = {
+    'cn-northwest-1': Constant.ZHY_EC2_AMI_ID,
+    'cn-north-1': Constant.BJ_EC2_AMI_ID,
+}
+
+my_ami = ec2.GenericLinuxImage(ami_map)
 
 with open("./user_data/user_data.sh") as f:
     user_data_content = f.read()
@@ -36,9 +40,10 @@ class CdkInfraStack(core.Stack):
         super().__init__(scope, id, **kwargs)
 
         # step 1. VPC
+        # 如果在已有的Vpc 中建立环境， 可以用下面这句， 需要传入 vpc_id
         # vpc = ec2.Vpc.from_lookup(self, "VPC", vpc_id='')
         vpc = ec2.Vpc(self, "VPC",
-                max_azs=2,
+                max_azs=2,  # 两个分区， 每个分区建一个子网
                 cidr="10.10.0.0/16",
                 # configuration will create 3 groups in 2 AZs = 6 subnets.
                 subnet_configuration=[ec2.SubnetConfiguration(
@@ -60,6 +65,7 @@ class CdkInfraStack(core.Stack):
                 # nat_gateways=2,
                 )
 
+        # ES 需要部署到私有子网中
         selection = vpc.select_subnets(
             subnet_type=ec2.SubnetType.PRIVATE
         )
@@ -120,10 +126,12 @@ class CdkInfraStack(core.Stack):
             node_to_node_encryption_options={"enabled": False},
             vpc_options={
                 "securityGroupIds": [sg_es_cluster.security_group_id],
+                # 如果开启多个节点， 需要配置多个子网， 目前测试只有一个ES 节点， 就只用到一个子网
                 "subnetIds": selection.subnet_ids[:1]
             },
             ebs_options={"ebsEnabled": True, "volumeSize": 12, "volumeType": "gp2"},
             elasticsearch_cluster_config={
+                                          # 生成环境需要开启三个
                                           # "dedicatedMasterCount": 3,
                                           # "dedicatedMasterEnabled": True,
                                           # "dedicatedMasterType": 'm4.large.elasticsearch',
@@ -216,10 +224,10 @@ class CdkInfraStack(core.Stack):
                                        instance_name="BastionHost",
                                        instance_type=ec2.InstanceType(instance_type_identifier="m4.large"))
         bastion.instance.instance.add_property_override("KeyName", Constant.EC2_KEY_NAME)
-        bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(22), "Internet access SSH")
-        bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(8080), "Internet access HTTP")
-        bastion.instance.instance.iam_instance_profile = instance_profile.instance_profile_name
-        bastion.instance.instance.image_id = Constant.EC2_AMI_ID
+        bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(22), "Internet access SSH") # 生成环境可以限定IP allow_from
+        bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(8080), "Internet access HTTP")  # 测试需要
+        bastion.instance.instance.iam_instance_profile = instance_profile.instance_profile_name   # 给EC2设置 profile , 相当于Role
+        bastion.instance.instance.image_id = ami_map.get(Constant.REGION_NAME)  # 指定AMI ID
         #堡垒机的user_data 只能执行一次， 如果要执行多次， 请参考 https://amazonaws-china.com/premiumsupport/knowledge-center/execute-user-data-ec2/?nc1=h_ls
         bastion.instance.add_user_data("/home/ec2-user/start.sh {}  {} '{}' {}".
                                        format(es.attr_domain_endpoint, Constant.REGION_NAME,
@@ -239,20 +247,28 @@ class CdkInfraStack(core.Stack):
                                                 )
 
         # asg.connections.allow_from(alb, ec2.Port.tcp(8080), "ALB access 80 port of EC2 in Autoscaling Group")
-        asg.connections.allow_from_any_ipv4(ec2.Port.tcp(8080), "Internet access HTTP for test")
+        asg.connections.allow_from_any_ipv4(ec2.Port.tcp(8080), "Internet access HTTP for test") # 测试用
         asg.connections.allow_from_any_ipv4(ec2.Port.tcp(22), "Internet access SSH")  # for debug
         listener.add_targets("addTargetGroup",
                              port=8080,
                              targets=[asg])
 
-        core.CfnOutput(self, "UrlLoad_Balancer", value='https://{}'.format(alb.load_balancer_dns_name))
-        core.CfnOutput(self, "UrlKibana", value='https://localhost:9200/_plugin/kibana/app/kibana')
-        core.CfnOutput(self, "UrlBastion", value='http://{}:8080'.format(bastion.instance_public_dns_name))
 
-        # core.CfnOutput(self, "CmdUser_Data", value=user_data)
-        core.CfnOutput(self, "CmdSshProxyToKinana", value='ssh -i "~/id_rsa.pem" ec2-user@{}  -N -L 9200:{}:443'.format(bastion.instance_public_dns_name,es.attr_domain_endpoint ))
+        # Elastic Search 统计log 数量， 可以在堡垒机上执行， 快速查看日志数量。
         core.CfnOutput(self, "CmdGetCountIndex", value='curl https://{}/{}/_count'.format(es.attr_domain_endpoint, Constant.ES_INDEX_NAME))
 
-        core.CfnOutput(self, "CmdSshToBastion", value='ssh -i "~/id_rsa.pem" ec2-user@{}'.format(bastion.instance_public_dns_name))
+        # 堡垒机的登录命令， 可以直接复制使用
+        core.CfnOutput(self, "CmdSshToBastion", value='ssh -i "~/{}.pem" ec2-user@{}'.format(Constant.EC2_KEY_NAME, bastion.instance_public_dns_name))
+
+        # ALB 的访问地址， 第一次访问的时候， 要等待一段时间， 需要和AutoScaling建立关联。
+        core.CfnOutput(self, "UrlLoad_Balancer", value='https://{}'.format(alb.load_balancer_dns_name))
+
+        # 堡垒机的web访问地址， 为了调试方便， 在堡垒机上也使用相同的AMI。
+        core.CfnOutput(self, "UrlBastion", value='http://{}:8080'.format(bastion.instance_public_dns_name))
+
+        # 下面这条输出的命令 是通过堡垒机和Elasticsearch 建立隧道， 在本地访问kibana。
+        core.CfnOutput(self, "CmdSshProxyToKinana", value='ssh -i "~/{}.pem" ec2-user@{}  -N -L 9200:{}:443'.format(Constant.EC2_KEY_NAME, bastion.instance_public_dns_name,es.attr_domain_endpoint ))
+        # 执行完上面的命令后， 在浏览器中打开下面的连接
+        core.CfnOutput(self, "UrlKibana", value='https://localhost:9200/_plugin/kibana/app/kibana')
 
 

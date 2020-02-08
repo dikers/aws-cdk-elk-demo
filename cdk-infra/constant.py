@@ -22,8 +22,9 @@ class Constant:
     #ec2 秘钥名称， 需要提前创建好，登录ec2需要
     EC2_KEY_NAME = "id_rsa"
 
-    #AMI ID
-    EC2_AMI_ID = 'ami-0823eb3d6e4a54e1f'
+    #不同区域的共享AMI ID
+    ZHY_EC2_AMI_ID = 'ami-0823eb3d6e4a54e1f'
+    BJ_EC2_AMI_ID = 'ami-0ffd35f1ea4a72d0d'
 
     #安装的region 名称
-    REGION_NAME = 'cn-northwest-1'
+    REGION_NAME = 'cn-north-1'
