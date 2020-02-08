@@ -214,7 +214,7 @@ class CdkInfraStack(core.Stack):
         bastion.instance.instance.add_property_override("KeyName", Constant.EC2_KEY_NAME)
         bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(22), "Internet access SSH") # 生成环境可以限定IP allow_from
         bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(8080), "Internet access HTTP")  # 测试需要
-        bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(443), "Internet access HTTPS")  # 测试需要
+        # bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(443), "Internet access HTTPS")  # 测试需要
 
         bastion.instance.instance.iam_instance_profile = instance_profile.instance_profile_name   # 给EC2设置 profile , 相当于Role
         bastion.instance.instance.image_id = ami_map.get(Constant.REGION_NAME)  # 指定AMI ID
