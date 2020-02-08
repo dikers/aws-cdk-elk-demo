@@ -24,8 +24,8 @@ class Constant:
 
     #不同区域的共享AMI ID
 
-    ZHY_EC2_AMI_ID = 'ami-0dd28ac1d9c72a8cf'
-    BJ_EC2_AMI_ID = 'ami-042a17c223746b519'
+    ZHY_EC2_AMI_ID = 'ami-020b7614aa0e43830'
+    BJ_EC2_AMI_ID = 'ami-085fcc092e0269581'
 
     #安装的region 名称
     REGION_NAME = 'cn-northwest-1'
