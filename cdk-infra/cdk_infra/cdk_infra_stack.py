@@ -178,6 +178,7 @@ class CdkInfraStack(core.Stack):
             environment={
                 'SNS_TOPIC_ARN': topic.topic_arn,
                 'ES_ENDPOINT': es.attr_domain_endpoint,
+                'ES_INDEX_NAME': Constant.ES_INDEX_NAME
             }
         )
 
@@ -226,12 +227,18 @@ class CdkInfraStack(core.Stack):
         bastion.instance.instance.add_property_override("KeyName", Constant.EC2_KEY_NAME)
         bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(22), "Internet access SSH") # 生成环境可以限定IP allow_from
         bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(8080), "Internet access HTTP")  # 测试需要
+        # bastion.connections.allow_from(sg_es_cluster, ec2.Port.tcp(443))  #建立ssh 隧道用
+        bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(443), "Internet access HTTP")  # 测试需要
         bastion.instance.instance.iam_instance_profile = instance_profile.instance_profile_name   # 给EC2设置 profile , 相当于Role
         bastion.instance.instance.image_id = ami_map.get(Constant.REGION_NAME)  # 指定AMI ID
         #堡垒机的user_data 只能执行一次， 如果要执行多次， 请参考 https://amazonaws-china.com/premiumsupport/knowledge-center/execute-user-data-ec2/?nc1=h_ls
-        bastion.instance.add_user_data("/home/ec2-user/start.sh {}  {} '{}' {}".
-                                       format(es.attr_domain_endpoint, Constant.REGION_NAME,
-                                        Constant.ES_LOG_PATH, Constant.ES_INDEX_NAME))
+        bastion.instance.add_user_data("date >> /home/ec2-user/root.txt")  # 查看启动脚本是否执行
+
+        bastion_user_data = "/home/ec2-user/start.sh {}  {} '{}' {}".format(es.attr_domain_endpoint,
+                                                                            Constant.REGION_NAME,
+                                                                            Constant.ES_LOG_PATH,
+                                                                            Constant.ES_INDEX_NAME)
+        bastion.instance.add_user_data(bastion_user_data)
 
         asg = autoscaling.AutoScalingGroup(self, "myASG",
                                                 vpc=vpc,
@@ -258,17 +265,20 @@ class CdkInfraStack(core.Stack):
         core.CfnOutput(self, "CmdGetCountIndex", value='curl https://{}/{}/_count'.format(es.attr_domain_endpoint, Constant.ES_INDEX_NAME))
 
         # 堡垒机的登录命令， 可以直接复制使用
-        core.CfnOutput(self, "CmdSshToBastion", value='ssh -i "~/{}.pem" ec2-user@{}'.format(Constant.EC2_KEY_NAME, bastion.instance_public_dns_name))
+        core.CfnOutput(self, "CmdSshToBastion", value='ssh -i ~/{}.pem ec2-user@{}'.format(Constant.EC2_KEY_NAME, bastion.instance_public_dns_name))
+
+        # 在堡垒机上启动服务的命令， 堡垒机重启以后， 需要执行下面的命令， 可以启动web服务 发送日志到ES
+        core.CfnOutput(self, "CmdSshBastionStartWeb", value=bastion_user_data)
 
         # ALB 的访问地址， 第一次访问的时候， 要等待一段时间， 需要和AutoScaling建立关联。
-        core.CfnOutput(self, "UrlLoad_Balancer", value='https://{}'.format(alb.load_balancer_dns_name))
+        core.CfnOutput(self, "UrlLoad_Balancer", value='http://{}'.format(alb.load_balancer_dns_name))
 
         # 堡垒机的web访问地址， 为了调试方便， 在堡垒机上也使用相同的AMI。
         core.CfnOutput(self, "UrlBastion", value='http://{}:8080'.format(bastion.instance_public_dns_name))
 
         # 下面这条输出的命令 是通过堡垒机和Elasticsearch 建立隧道， 在本地访问kibana。
-        core.CfnOutput(self, "CmdSshProxyToKinana", value='ssh -i "~/{}.pem" ec2-user@{}  -N -L 9200:{}:443'.format(Constant.EC2_KEY_NAME, bastion.instance_public_dns_name,es.attr_domain_endpoint ))
+        core.CfnOutput(self, "CmdSshProxyToKinana", value='ssh -i ~/{}.pem ec2-user@{}  -N -L 9200:{}:443'.format(Constant.EC2_KEY_NAME, bastion.instance_public_dns_name,es.attr_domain_endpoint ))
         # 执行完上面的命令后， 在浏览器中打开下面的连接
-        core.CfnOutput(self, "UrlKibana", value='https://localhost:9200/_plugin/kibana/app/kibana')
+        core.CfnOutput(self, "UrlKibana", value='https://localhost:9200/_plugin/kibana/')
 
 

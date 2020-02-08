@@ -5,6 +5,7 @@ import boto3
 
 SNS_TOPIC_ARN = os.environ['SNS_TOPIC_ARN']
 ES_ENDPOINT = os.environ['ES_ENDPOINT']
+ES_INDEX_NAME = os.environ['ES_INDEX_NAME']
 
 
 def handler(event, context):
@@ -12,7 +13,7 @@ def handler(event, context):
     print('SNS_TOPIC_ARN : {}  '.format(SNS_TOPIC_ARN))
     print('ES_ENDPOINT   : {}  '.format(ES_ENDPOINT))
 
-    es_url = 'https://{}/subway/_count'.format(ES_ENDPOINT)
+    es_url = 'https://{}/{}/_count'.format(ES_ENDPOINT, ES_INDEX_NAME)
 
     print(es_url)
     formData = {

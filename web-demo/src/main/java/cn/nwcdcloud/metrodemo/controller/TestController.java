@@ -64,7 +64,7 @@ public class TestController {
 			total = 100;
 		}
 //		int sleep = 1000 / tps;
-		for (int i = 1; i <= total; i++) {
+		for (int i = 0; i < total; i++) {
 			logger.info(disposeLog());
 //			if (i < total) {
 //				try {
