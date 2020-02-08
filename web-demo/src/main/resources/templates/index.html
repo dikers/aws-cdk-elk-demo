@@ -36,15 +36,15 @@
     <p><textarea style="width:55%;height:350px" v-model="log_text_area"></textarea> </p>
     <p><span>&nbsp;</span></p>
     <p>ssh -i ~/id_rsa.pem ec2-user@'replace_bastion_public_dns_name'  -N -L 9200:'replace_elastic_search_cluster_dns_name':443</p>
-    <p>执行上面命令以后， 在本地浏览器打开<a href="https://localhost:9200/_plugin/kibana">Kibana</a>查看</p>
+    <p>执行上面命令以后，通过ssh 建立了堡垒机到ES服务器的隧道，在本地浏览器打开<a href="https://localhost:9200/_plugin/kibana" target="_blank" >Kibana</a>查看</p>
 
 </div>
 
 <footer class="footer">
     <div class="container">
-        <p class="text-muted"><a href="https://github.com/dikers/aws-cdk-elk-demo">Github源码地址</a>
+        <p class="text-muted"><a href="https://github.com/dikers/aws-cdk-elk-demo" target="_blank" >Github源码地址</a>
             <span>&nbsp;&nbsp;&nbsp;</span>
-            <a href="https://www.elastic.co/guide/en/kibana/master/index-patterns.html">Kibana官方文档</a>
+            <a href="https://www.elastic.co/guide/en/kibana/master/index-patterns.html" target="_blank" >Kibana官方文档</a>
         </p>
     </div>
 </footer>

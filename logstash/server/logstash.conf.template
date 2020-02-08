@@ -39,6 +39,7 @@ output {
    codec => rubydebug {}
   }
   amazon_es {
+      flush_size => 4000
       hosts => ["_ES_URL_"]
       region => "_REGION_"
       aws_access_key_id => '_ES_AK_'

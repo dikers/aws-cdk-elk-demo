@@ -45,12 +45,8 @@
 
 如果想用户开发环境， 请参考 [Logstash+ Filebeat镜像制作](./logstash)， 里面有如何使用Logstash 和Filebeat 的介绍。 
 
-如果只做Demo演示， 可以使用公开的AMIID, 下面两个AMI 分别在不同区域
+如果只做Demo演示， 可以使用公开的AMIID, 请参看 [配置文件中的ami-id](./cdk-infra/constant.py)
 
-```shell script
-ZHY_EC2_AMI_ID = 'ami-07a43099d3f037572'
-BJ_EC2_AMI_ID = 'ami-042a17c223746b519'
-```
 
 
 ![image](./images/003.png)
@@ -162,6 +158,36 @@ cdk-infra.EsDomainEndpoint = vpc-cdk-es-demo-w2a7o4s272gfzo2f3rn5mrlycu.cn-north
 cdk-infra.CmdSshProxyToKinana = ssh -i "~/id_rsa.pem" ec2-user@ec2-161-189-69-79.cn-northwest-1.compute.amazonaws.com.cn  -N -L 9200:vpc-cdk-es-demo-w2a7o4s272gfzo2f3rn5mrlycu.cn-northwest-1.es.amazonaws.com.cn:443
 # 执行完上面的命令后， 在浏览器中打开下面的连接
 cdk-infra.UrlKibana = https://localhost:9200/_plugin/kibana/app/kibana
+
+```
+
+
+
+### 浏览器中打开 ALB 的网址
+
+如下图 点击发送按钮，发送一定数量的log日志， 日志中会随机产生一些错误日志， 当最近时间内有错误日志时，Lambda 会给SNS 发消息。 
+![image](./images/005.png)
+
+
+### Kibana 查询界面
+![image](./images/006.png)
+
+查询语句示例
+```shell script
+GET /log_index/_count
+
+GET /log_index/_search
+{
+  "query": {
+    "bool": {
+        "must": [
+          {"match": {"error_code": 1111}},
+          {"range": {"create_time": {"gt": "now-10m", "lte":"now"}}}
+        ]
+      }
+  }
+}
+
 
 ```
 

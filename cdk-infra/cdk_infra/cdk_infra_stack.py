@@ -22,7 +22,7 @@ from aws_cdk.aws_iam import (
 from constant import Constant
 
 
-# 中国两个区域会用到两个ami_id
+# 中国两个区域会用到不同的ami_id
 ami_map = {
     'cn-northwest-1': Constant.ZHY_EC2_AMI_ID,
     'cn-north-1': Constant.BJ_EC2_AMI_ID,
@@ -107,17 +107,13 @@ class CdkInfraStack(core.Stack):
             resource_name=Constant.ES_CLUSTER_NAME
         )
 
-        sg_es_cluster = ec2.SecurityGroup(
-            self,
-            id="sg_es_cluster",
-            vpc=vpc,
-            security_group_name="sg_es_cluster"
-        )
+        # 生产环境建议设置安全组， 只接收VPC内443端口请求
+        sg_es_cluster = ec2.SecurityGroup(self,id="sg_es_cluster",vpc=vpc,
+            security_group_name="sg_es_cluster")
 
         sg_es_cluster.add_ingress_rule(
             peer=ec2.Peer.ipv4(vpc.vpc_cidr_block),
-            connection=ec2.Port.tcp(443)
-        )
+            connection=ec2.Port.tcp(443))
 
         es = elasticsearch.CfnDomain(
             self, Constant.ES_CLUSTER_NAME,
@@ -125,11 +121,11 @@ class CdkInfraStack(core.Stack):
             domain_name=Constant.ES_CLUSTER_NAME,
             node_to_node_encryption_options={"enabled": False},
             vpc_options={
-                "securityGroupIds": [sg_es_cluster.security_group_id],
+                "securityGroupIds": [sg_es_cluster.security_group_id],  # 生产环境建议设置安全组， 只接收VPC内443端口请求
                 # 如果开启多个节点， 需要配置多个子网， 目前测试只有一个ES 节点， 就只用到一个子网
                 "subnetIds": selection.subnet_ids[:1]
             },
-            ebs_options={"ebsEnabled": True, "volumeSize": 12, "volumeType": "gp2"},
+            ebs_options={"ebsEnabled": True, "volumeSize": 10, "volumeType": "gp2"},
             elasticsearch_cluster_config={
                                           # 生成环境需要开启三个
                                           # "dedicatedMasterCount": 3,
@@ -152,14 +148,9 @@ class CdkInfraStack(core.Stack):
                 }
             ]
         }
-        core.CfnOutput(self, "Es_Domain_Endpoint", value=es.attr_domain_endpoint)
-
-
 
         # step 5.  SNS
-        topic = sns.Topic(
-            self, "topic"
-        )
+        topic = sns.Topic(self, "topic")
         topic.add_subscription(subs.EmailSubscription(Constant.EMAIL_ADDRESS))
 
         # 设置SNS endpoint, 让lambda 可以从vpc 内部访问
@@ -204,13 +195,9 @@ class CdkInfraStack(core.Stack):
         alb = elb.ApplicationLoadBalancer(self, "myALB",
                                           vpc=vpc,
                                           internet_facing=True,
-                                          load_balancer_name="myALB"
-                                          )
-        alb.connections.allow_from_any_ipv4(
-            ec2.Port.tcp(80), "Internet access ALB 80")
-        listener = alb.add_listener("my80",
-                                    port=80,
-                                    open=True)
+                                          load_balancer_name="myALB")
+        alb.connections.allow_from_any_ipv4(ec2.Port.tcp(80), "Internet access ALB 80")
+        listener = alb.add_listener("my80", port=80, open=True)
 
         # Create Autoscaling Group with fixed 2*EC2 hosts
 
@@ -227,17 +214,17 @@ class CdkInfraStack(core.Stack):
         bastion.instance.instance.add_property_override("KeyName", Constant.EC2_KEY_NAME)
         bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(22), "Internet access SSH") # 生成环境可以限定IP allow_from
         bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(8080), "Internet access HTTP")  # 测试需要
-        # bastion.connections.allow_from(sg_es_cluster, ec2.Port.tcp(443))  #建立ssh 隧道用
-        bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(443), "Internet access HTTP")  # 测试需要
+        bastion.connections.allow_from_any_ipv4(ec2.Port.tcp(443), "Internet access HTTPS")  # 测试需要
+
         bastion.instance.instance.iam_instance_profile = instance_profile.instance_profile_name   # 给EC2设置 profile , 相当于Role
         bastion.instance.instance.image_id = ami_map.get(Constant.REGION_NAME)  # 指定AMI ID
-        #堡垒机的user_data 只能执行一次， 如果要执行多次， 请参考 https://amazonaws-china.com/premiumsupport/knowledge-center/execute-user-data-ec2/?nc1=h_ls
-        bastion.instance.add_user_data("date >> /home/ec2-user/root.txt")  # 查看启动脚本是否执行
 
+        #堡垒机的user_data 只能执行一次， 如果要执行多次， 请参考 https://amazonaws-china.com/premiumsupport/knowledge-center/execute-user-data-ec2/?nc1=h_ls
         bastion_user_data = "/home/ec2-user/start.sh {}  {} '{}' {}".format(es.attr_domain_endpoint,
                                                                             Constant.REGION_NAME,
                                                                             Constant.ES_LOG_PATH,
                                                                             Constant.ES_INDEX_NAME)
+        bastion.instance.add_user_data("date >> /home/ec2-user/root.txt")  # 查看启动脚本是否执行
         bastion.instance.add_user_data(bastion_user_data)
 
         asg = autoscaling.AutoScalingGroup(self, "myASG",
@@ -250,15 +237,12 @@ class CdkInfraStack(core.Stack):
                                                 desired_capacity=1,
                                                 min_capacity=1,
                                                 max_capacity=1,
-                                                role=access_es_role
-                                                )
+                                                role=access_es_role )
 
-        # asg.connections.allow_from(alb, ec2.Port.tcp(8080), "ALB access 80 port of EC2 in Autoscaling Group")
-        asg.connections.allow_from_any_ipv4(ec2.Port.tcp(8080), "Internet access HTTP for test") # 测试用
+        asg.connections.allow_from(alb, ec2.Port.tcp(8080), "ALB access 80 port of EC2 in Autoscaling Group")
+        # asg.connections.allow_from_any_ipv4(ec2.Port.tcp(8080), "Internet access HTTP for test") # 测试用
         asg.connections.allow_from_any_ipv4(ec2.Port.tcp(22), "Internet access SSH")  # for debug
-        listener.add_targets("addTargetGroup",
-                             port=8080,
-                             targets=[asg])
+        listener.add_targets("addTargetGroup", port=8080, targets=[asg])
 
 
         # Elastic Search 统计log 数量， 可以在堡垒机上执行， 快速查看日志数量。
@@ -268,7 +252,7 @@ class CdkInfraStack(core.Stack):
         core.CfnOutput(self, "CmdSshToBastion", value='ssh -i ~/{}.pem ec2-user@{}'.format(Constant.EC2_KEY_NAME, bastion.instance_public_dns_name))
 
         # 在堡垒机上启动服务的命令， 堡垒机重启以后， 需要执行下面的命令， 可以启动web服务 发送日志到ES
-        core.CfnOutput(self, "CmdSshBastionStartWeb", value=bastion_user_data)
+        core.CfnOutput(self, "CmdSshBastionStartWeb", value='sudo {}'.format(bastion_user_data))
 
         # ALB 的访问地址， 第一次访问的时候， 要等待一段时间， 需要和AutoScaling建立关联。
         core.CfnOutput(self, "UrlLoad_Balancer", value='http://{}'.format(alb.load_balancer_dns_name))

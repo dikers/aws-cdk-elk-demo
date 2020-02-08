@@ -17,14 +17,14 @@ class Constant:
     ES_INDEX_NAME = 'log_index'
 
     # filebeat 监控的日志路径
-    ES_LOG_PATH = '/home/ec2-user/web-app/target/logs/*'
+    ES_LOG_PATH = '/home/ec2-user/web-app/target/logs/*.log'
 
     #ec2 秘钥名称， 需要提前创建好，登录ec2需要
     EC2_KEY_NAME = "id_rsa"
 
     #不同区域的共享AMI ID
 
-    ZHY_EC2_AMI_ID = 'ami-07a43099d3f037572'
+    ZHY_EC2_AMI_ID = 'ami-0dd28ac1d9c72a8cf'
     BJ_EC2_AMI_ID = 'ami-042a17c223746b519'
 
     #安装的region 名称
