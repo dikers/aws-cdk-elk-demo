@@ -23,8 +23,9 @@ class Constant:
     EC2_KEY_NAME = "id_rsa"
 
     #不同区域的共享AMI ID
-    ZHY_EC2_AMI_ID = 'ami-0823eb3d6e4a54e1f'
-    BJ_EC2_AMI_ID = 'ami-0ffd35f1ea4a72d0d'
+
+    ZHY_EC2_AMI_ID = 'ami-07a43099d3f037572'
+    BJ_EC2_AMI_ID = 'ami-042a17c223746b519'
 
     #安装的region 名称
-    REGION_NAME = 'cn-north-1'
+    REGION_NAME = 'cn-northwest-1'

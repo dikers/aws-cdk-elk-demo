@@ -35,6 +35,13 @@
 			<version>3.1.0</version>
 			<scope>provided</scope>
 		</dependency>
+
+		<!-- 模板引擎 Thymeleaf 依赖 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+
 		<!-- ================================================= -->
 		<!-- 日志及相关依赖（用slf4j+logback代替jcl+log4j） -->
 		<!-- ================================================= -->
@@ -59,6 +66,12 @@
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>1.2.29</version>
+		</dependency>
+
 	</dependencies>
 
 

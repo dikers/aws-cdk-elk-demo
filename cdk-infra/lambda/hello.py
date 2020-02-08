@@ -19,8 +19,8 @@ def handler(event, context):
         "query": {
             "bool": {
                 "must": [
-                    {"match": {"error_code": 9999}},
-                    {"range": {"create_time": {"gt": "now-10h", "lte": "now"}}}
+                    {"match": {"error_code": 1111}},
+                    {"range": {"create_time": {"gt": "now-5m", "lte": "now"}}}
                 ]
             }
         }
@@ -44,7 +44,7 @@ def handler(event, context):
 
     sns = boto3.client('sns')
 
-    if error_count > 0:
+    if error_count > 5:
         response = sns.publish(
             TopicArn=SNS_TOPIC_ARN,
             Message=message

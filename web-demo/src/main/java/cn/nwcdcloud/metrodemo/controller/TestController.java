@@ -1,21 +1,55 @@
 package cn.nwcdcloud.metrodemo.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.parser.ParserConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 @RestController
+@CrossOrigin
 public class TestController {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private int linkMax = 89999, linkMin = 10000;
 	private int errMax = 10, errMin = 1;
 	private int timeMax = 5, timeMin = 1;
 
-	@ResponseBody
+
+
+
 	@RequestMapping("/")
-	public String index(Integer total, Integer tps) {
+	public ModelAndView index(HttpServletRequest request) {
+
+		String localHostIp = "127.0.0.1";
+		try {
+			InetAddress address = InetAddress.getLocalHost();
+			localHostIp = address.getHostAddress();
+		} catch (UnknownHostException e) {
+			localHostIp = "unknown";
+			e.printStackTrace();
+		}
+		ModelMap model = new ModelMap();
+		model.addAttribute("localHostIp", localHostIp);
+		return new ModelAndView("index", model);
+	}
+
+
+
+	@ResponseBody
+	@RequestMapping("/send")
+	public String send(Integer total, Integer tps) {
 
 //		if (tps == null) {
 //			tps = 1;
@@ -30,7 +64,7 @@ public class TestController {
 			total = 100;
 		}
 //		int sleep = 1000 / tps;
-		for (int i = 1; i <= total* 10; i++) {
+		for (int i = 1; i <= total; i++) {
 			logger.info(disposeLog());
 //			if (i < total) {
 //				try {
@@ -40,8 +74,19 @@ public class TestController {
 //				}
 //			}
 		}
-		return "Send "+total+" messages";
+		LocalDateTime now = LocalDateTime.now();
+		DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
+
+		JSONObject  result = new JSONObject();
+		result.put("count", total);
+		result.put("time", now.format(formatter2));
+		return JSONObject.toJSONString( result) ;
 	}
+
+
+
+
+
 
 	private String disposeLog() {
 		int linkId = (int) (Math.random() * (linkMax - linkMin) + linkMin);

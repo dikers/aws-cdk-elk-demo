@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+
+    <title>AWS CDK ELK DEMO</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://v3.bootcss.com/examples/signin/signin.css" rel="stylesheet" />
+    <link href="css/a.css" rel="stylesheet" />
+</head>
+
+<body>
+
+<!-- Begin page content -->
+<div class="container" id="main">
+    <div class="page-header">
+        <h1>模拟生成日志界面</h1>
+    </div>
+    <p> 服务器IP : <span th:text="${localHostIp}" style="color:blue;bold"></span></p>
+    <form class="form-inline">
+        <div class="form-group">
+            <label class="sr-only" for="inputAmount"></label>
+            <div class="input-group">
+                <div class="input-group-addon"></div>
+                <input type="number" class="form-control" id="inputAmount"  v-model="amount" placeholder="日志数量 (1, 100)"  />
+                <div class="input-group-addon"  ></div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-primary"  v-on:click="send()">生成日志</button>
+    </form>
+    <p><span>&nbsp;</span></p>
+    <p><textarea style="width:55%;height:350px" v-model="log_text_area"></textarea> </p>
+    <p><span>&nbsp;</span></p>
+    <p>ssh -i "~/id_rsa.pem" ec2-user@'replace_bastion_public_dns_name'  -N -L 9200:'replace_elastic_search_cluster_dns_name':443</p>
+    <p>执行上面命令以后， 在本地浏览器打开<a href="https://localhost:9200/_plugin/kibana/app/kibana">Kibana</a>查看</p>
+
+</div>
+
+<footer class="footer">
+    <div class="container">
+        <p class="text-muted"><a href="https://github.com/dikers/aws-cdk-elk-demo">Github源码地址</a>
+            <span>&nbsp;&nbsp;&nbsp;</span>
+            <a href="https://www.elastic.co/guide/en/kibana/master/index-patterns.html">Kibana官方文档</a>
+        </p>
+    </div>
+</footer>
+
+
+</body>
+
+
+<script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://v3.bootcss.com/assets/js/vendor/holder.min.js"></script>
+<script src="https://v3.bootcss.com/assets/js/ie10-viewport-bug-workaround.js"></script>
+<script src="http://apps.bdimg.com/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+<script src="js/a.js"></script>
+</html>

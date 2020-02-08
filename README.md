@@ -45,7 +45,14 @@
 
 如果想用户开发环境， 请参考 [Logstash+ Filebeat镜像制作](./logstash)， 里面有如何使用Logstash 和Filebeat 的介绍。 
 
-如果只是做Demo演示， 可以使用AMI ID（ ami-07295b0a0b6ce1c9c ）进行查找
+如果只做Demo演示， 可以使用公开的AMIID, 下面两个AMI 分别在不同区域
+
+```shell script
+ZHY_EC2_AMI_ID = 'ami-07a43099d3f037572'
+BJ_EC2_AMI_ID = 'ami-042a17c223746b519'
+```
+
+
 ![image](./images/003.png)
 
 
