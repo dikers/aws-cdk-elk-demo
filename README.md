@@ -9,7 +9,7 @@
 
 # 项目介绍
 
-  本项目是演示如何用AWS CDK快速搭建 Elasticsearch + Logstash + Filebeat + Kinaba 的日志分析报警系统。 
+  本项目是演示如何用AWS CDK快速搭建基于 Elasticsearch + Logstash + Filebeat + Kinaba 的日志分析报警系统。 
   
   
 # 项目架构图
@@ -124,6 +124,8 @@ cdk 代码的说明，在[cdk_infra_stack.py](./cdk-infra/cdk_infra/cdk_infra_st
 
 
 
+
+
 ### 6. 验证
 
 第一步中生成的秘钥 保存在~/id_rsa.pem 设置权限400
@@ -153,6 +155,10 @@ cdk-infra.CmdSshToBastion = ssh -i "~/id_rsa.pem" ec2-user@ec2-161-189-69-79.cn-
 
 # Elastic Search Endpoint 名称， 默认只能VPC 中添加了指定Role的EC2 可以访问。 
 cdk-infra.EsDomainEndpoint = vpc-cdk-es-demo-w2a7o4s272gfzo2f3rn5mrlycu.cn-northwest-1.es.amazonaws.com.cn
+
+# 在堡垒机中启动服务， 用来测试
+cdk-infra.CmdSshBastionStartWeb = sudo /home/ec2-user/start.sh vpc-cdk-es-demo-w2a7o4s272gfzo2f3rn5mrlycu.cn-northwest-1.es.amazonaws.com.cn  cn-northwest-1 '/home/ec2-user/web-app/target/logs/*.log' log_index
+
 
 # 下面这条输出的命令 是通过堡垒机和Elasticsearch 建立隧道， 在本地访问kibana。 
 cdk-infra.CmdSshProxyToKinana = ssh -i "~/id_rsa.pem" ec2-user@ec2-161-189-69-79.cn-northwest-1.compute.amazonaws.com.cn  -N -L 9200:vpc-cdk-es-demo-w2a7o4s272gfzo2f3rn5mrlycu.cn-northwest-1.es.amazonaws.com.cn:443
@@ -191,12 +197,20 @@ GET /log_index/_search
 
 ```
 
+### Kibana Dashboard 界面
+
+可以根据需要，绘制图表，如下图所示
+![image](./images/008.png)
+
+
 ### CloudWatch Event 通知事件
 
 
 每当最近五分钟后错误日志以后， Lambda 会触发SNS 发送邮件通知相关人员， 如下图
 
 ![image](./images/007.png)
+  
+  
   
   
   
