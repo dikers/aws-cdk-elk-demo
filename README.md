@@ -191,6 +191,14 @@ GET /log_index/_search
 
 ```
 
+### CloudWatch Event 通知事件
+
+
+每当最近五分钟后错误日志以后， Lambda 会触发SNS 发送邮件通知相关人员， 如下图
+
+![image](./images/007.png)
+  
+  
   
   
 # 参考文档
