@@ -225,6 +225,8 @@ GET /log_index/_search
   
 #### [CDK python API ](https://docs.aws.amazon.com/cdk/api/latest/python/index.html)
 
+#### [CDK 代码文章合集](https://github.com/eladb/awesome-cdk)
+
 #### [Logstash 官网文档](https://www.elastic.co/guide/en/logstash/current/index.html)
 
 #### [Logstash 官网安装地址](https://www.elastic.co/guide/en/logstash/current/installing-logstash.html)
