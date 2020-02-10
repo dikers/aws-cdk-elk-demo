@@ -1,7 +1,12 @@
 package cn.nwcdcloud.metrodemo.controller;
 
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.parser.ParserConfig;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.ModelMap;
@@ -11,12 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
+import com.alibaba.fastjson.JSONObject;
 
 @RestController
 @CrossOrigin
@@ -25,9 +25,6 @@ public class TestController {
 	private int linkMax = 89999, linkMin = 10000;
 	private int errMax = 10, errMin = 1;
 	private int timeMax = 5, timeMin = 1;
-
-
-
 
 	@RequestMapping("/")
 	public ModelAndView index(HttpServletRequest request) {
@@ -44,8 +41,6 @@ public class TestController {
 		model.addAttribute("localHostIp", localHostIp);
 		return new ModelAndView("index", model);
 	}
-
-
 
 	@ResponseBody
 	@RequestMapping("/send")
@@ -77,16 +72,11 @@ public class TestController {
 		LocalDateTime now = LocalDateTime.now();
 		DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
 
-		JSONObject  result = new JSONObject();
+		JSONObject result = new JSONObject();
 		result.put("count", total);
 		result.put("time", now.format(formatter2));
-		return JSONObject.toJSONString( result) ;
+		return JSONObject.toJSONString(result);
 	}
-
-
-
-
-
 
 	private String disposeLog() {
 		int linkId = (int) (Math.random() * (linkMax - linkMin) + linkMin);
@@ -101,5 +91,29 @@ public class TestController {
 		}
 		int time = (int) (Math.random() * (timeMax - timeMin) + timeMin);
 		return String.format("-%s~设备标识~%s~%s~%s~%s~%s", linkId, ip, errCode, errMsg, "T", time);
+	}
+
+	@ResponseBody
+	@RequestMapping("/crontask")
+	public String crontask() {
+		return "OK";
+	}
+
+	@ResponseBody
+	@RequestMapping("/version")
+	public String version() {
+		return "V2,";
+	}
+
+	@ResponseBody
+	@RequestMapping("/getenv")
+	public String getenv(String name) {
+		return System.getenv(name);
+	}
+
+	@ResponseBody
+	@RequestMapping("/getProperty")
+	public String getProperty(String name) {
+		return System.getProperty(name);
 	}
 }
