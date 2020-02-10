@@ -50,7 +50,8 @@ cdk-es-demo (cdkesdemo) Before you can proceed, you must enable a service-linked
 ```shell script
 aws iam create-service-linked-role --aws-service-name es.amazonaws.com --profile 'region'
 ```
-
+[对 Amazon ES 使用服务相关角色](https://docs.aws.amazon.com/zh_cn/elasticsearch-service/latest/developerguide/slr-es.html)
+[使用服务相关角色 官网介绍](https://docs.aws.amazon.com/zh_cn/IAM/latest/UserGuide/using-service-linked-roles.html#create-service-linked-role)
 
 
 
