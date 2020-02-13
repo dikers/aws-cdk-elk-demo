@@ -37,9 +37,23 @@
 
 # 使用步骤
 
-### 1. 配置秘钥  id_rsa.pem  
+### 1. 配置秘钥&权限  
 登录堡垒机用到的秘钥， 请选择对应的区域生成，并妥善保管， 名称默认是id_rsa, 如果修改成其他名称， 请到[constant.py](./cdk-infra/constant.py) 中修改对应名称。 
 ![image](./images/002.png)
+
+
+
+需要配置 Elastic Search 的相关权限， 如果不添加会有以下出错信息。 
+cdk-es-demo (cdkesdemo) Before you can proceed, you must enable a service-linked role to give Amazon ES permissions to access your VPC. 
+
+这是由于在IAM中缺少elasticsearch的角色导致的，在Iam的控制面板中找到创建该角色的地方，但是可以使用CLI的名称创建，命令如下：
+```shell script
+aws iam create-service-linked-role --aws-service-name es.amazonaws.com --profile 'region'
+```
+[对 Amazon ES 使用服务相关角色](https://docs.aws.amazon.com/zh_cn/elasticsearch-service/latest/developerguide/slr-es.html)
+[使用服务相关角色 官网介绍](https://docs.aws.amazon.com/zh_cn/IAM/latest/UserGuide/using-service-linked-roles.html#create-service-linked-role)
+
+
 
 ### 2. 镜像制作
 
@@ -224,6 +238,8 @@ GET /log_index/_search
 #### [CDK Examples Repository](https://github.com/aws-samples/aws-cdk-examples)
   
 #### [CDK python API ](https://docs.aws.amazon.com/cdk/api/latest/python/index.html)
+
+#### [CDK 代码文章合集](https://github.com/eladb/awesome-cdk)
 
 #### [Logstash 官网文档](https://www.elastic.co/guide/en/logstash/current/index.html)
 

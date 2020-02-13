@@ -258,5 +258,9 @@ export _LOG_PATH_='xxxxx'
 需要使用amazon_es插件 ，配置IAM role（推荐）或者AKSK。
    
   
-   
+*  Filebeat 无法连接logstash 导致数据重复发送的问题。 
+ERROR	pipeline/output.go:100	Failed to connect to backoff(async(tcp://localhost:5044)): dial tcp 127.0.0.1:5044: connect: connection refused
+
+ 升级logsatsh插件
+ bin/logstash-plugin update logstash-input-beats
    
