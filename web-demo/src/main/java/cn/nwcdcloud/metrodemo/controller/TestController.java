@@ -1,7 +1,5 @@
 package cn.nwcdcloud.metrodemo.controller;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -10,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.ModelMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -18,6 +17,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.alibaba.fastjson.JSONObject;
 
+import cn.nwcdcloud.metrodemo.util.LocalUtils;
+import cn.nwcdcloud.metrodemo.util.MathUtils;
+
 @RestController
 @CrossOrigin
 public class TestController {
@@ -25,27 +27,18 @@ public class TestController {
 	private int linkMax = 89999, linkMin = 10000;
 	private int errMax = 10, errMin = 1;
 	private int timeMax = 5, timeMin = 1;
+	private String IP = LocalUtils.getIP();
 
 	@RequestMapping("/")
 	public ModelAndView index(HttpServletRequest request) {
-
-		String localHostIp = "127.0.0.1";
-		try {
-			InetAddress address = InetAddress.getLocalHost();
-			localHostIp = address.getHostAddress();
-		} catch (UnknownHostException e) {
-			localHostIp = "unknown";
-			e.printStackTrace();
-		}
 		ModelMap model = new ModelMap();
-		model.addAttribute("localHostIp", localHostIp);
+		model.addAttribute("localHostIp", IP);
 		return new ModelAndView("index", model);
 	}
 
 	@ResponseBody
 	@RequestMapping("/send")
 	public String send(Integer total, Integer tps) {
-
 //		if (tps == null) {
 //			tps = 1;
 //		}
@@ -94,6 +87,23 @@ public class TestController {
 	}
 
 	@ResponseBody
+	@RequestMapping("/cacl")
+	public String cacl(String num) {
+		long max = 2000000000L;
+		if (!StringUtils.isEmpty(num)) {
+			max = Long.valueOf(max);
+		}
+		MathUtils.getSum(max);
+		return "OK";
+	}
+
+	@ResponseBody
+	@RequestMapping("/ip")
+	public String ip() {
+		return IP + ",";
+	}
+
+	@ResponseBody
 	@RequestMapping("/crontask")
 	public String crontask() {
 		return "OK";
@@ -102,7 +112,7 @@ public class TestController {
 	@ResponseBody
 	@RequestMapping("/version")
 	public String version() {
-		return "V2,";
+		return "V1,";
 	}
 
 	@ResponseBody
