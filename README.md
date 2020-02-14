@@ -140,7 +140,7 @@ cdk 代码的说明，在[cdk_infra_stack.py](./cdk-infra/cdk_infra/cdk_infra_st
 
 
 
-### 6. 验证
+# 6. 验证
 
 第一步中生成的秘钥 保存在~/id_rsa.pem 设置权限400
 
@@ -195,6 +195,13 @@ window本地如果没有ssh客户端，可以访问<https://github.com/PowerShel
 
 ### Kibana 查询界面
 ![image](./images/006.png)
+
+
+### S3 日志存储界面
+通过配置logstash的 s3 插件以后， 数据可以直接导出到s3中。 
+
+![image](./images/009.png)
+
 
 查询语句示例
 ```shell script

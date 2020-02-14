@@ -31,6 +31,3 @@ class Constant:
 
     #安装的region 名称
     REGION_NAME = 'cn-northwest-1'
-
-    # 防止资源重复
-    RANDOM_STR = '123'

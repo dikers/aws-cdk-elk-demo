@@ -22,6 +22,7 @@ from aws_cdk.aws_iam import (
     PolicyStatement,
 )
 from constant import Constant
+import uuid
 
 # 中国两个区域会用到不同的ami_id
 ami_map = {
@@ -41,7 +42,7 @@ class CdkInfraStack(core.Stack):
         super().__init__(scope, id, **kwargs)
 
         # s3
-        s3_bucket_name = "{}-s3-{}".format(Constant.PROJECT_NAME,  self._get_UUID(8))
+        s3_bucket_name = "{}-s3-{}".format(Constant.PROJECT_NAME,  self._get_UUID(4))
         _s3.Bucket(self, id=s3_bucket_name, bucket_name=s3_bucket_name,
                    removal_policy=core.RemovalPolicy.DESTROY,  #TODO:  destroy for test
                    # removal_policy=core.RemovalPolicy.RETAIN
@@ -95,12 +96,12 @@ class CdkInfraStack(core.Stack):
         policyStatement.add_all_resources()
         policyStatement.sid = "Stmt1480452973134"
 
-        policy_name = "{}-ec2-es-policy-{}".format(Constant.PROJECT_NAME, self._get_UUID())
+        policy_name = "{}-ec2-es-policy".format(Constant.PROJECT_NAME)
         ec2_policy = Policy(self, policy_name, policy_name=policy_name)
 
         ec2_policy.add_statements(policyStatement)
 
-        role_name = "{}-ec2-es-role-{}".format(Constant.PROJECT_NAME, self._get_UUID())
+        role_name = "{}-ec2-es-role".format(Constant.PROJECT_NAME)
         access_es_role = Role(
             self, role_name,
             role_name=role_name,
@@ -109,7 +110,7 @@ class CdkInfraStack(core.Stack):
 
         ec2_policy.attach_to_role(access_es_role)
 
-        profile_name = "{}-ec2-es-profile-{}".format(Constant.PROJECT_NAME, self._get_UUID())
+        profile_name = "{}-ec2-es-profile".format(Constant.PROJECT_NAME)
         instance_profile = CfnInstanceProfile(self, profile_name,
                 instance_profile_name=profile_name,
                 roles=[access_es_role.role_name])
@@ -118,7 +119,7 @@ class CdkInfraStack(core.Stack):
 
 
         # 生产环境建议设置安全组， 只接收VPC内443端口请求
-        sg_es_cluster_name = "{}-sg-es-{}".format(Constant.PROJECT_NAME, self._get_UUID())
+        sg_es_cluster_name = "{}-sg-es".format(Constant.PROJECT_NAME)
         sg_es_cluster = ec2.SecurityGroup(self, id=sg_es_cluster_name, vpc=vpc,
             security_group_name=sg_es_cluster_name)
 
@@ -210,7 +211,7 @@ class CdkInfraStack(core.Stack):
 
 
         # Create ALB
-        alb_name = "{}-alb-{}".format(Constant.PROJECT_NAME, self._get_UUID())
+        alb_name = "{}-alb".format(Constant.PROJECT_NAME)
         alb = elb.ApplicationLoadBalancer(self, alb_name,
                                           vpc=vpc,
                                           internet_facing=True,
@@ -227,7 +228,7 @@ class CdkInfraStack(core.Stack):
 
         # step 3. 创建堡垒机
 
-        bastion_name = "{}-bastion-{}".format(Constant.PROJECT_NAME, self._get_UUID())
+        bastion_name = "{}-bastion".format(Constant.PROJECT_NAME)
         bastion = ec2.BastionHostLinux(self, bastion_name,
                                        vpc=vpc,
                                        subnet_selection=ec2.SubnetSelection(
@@ -252,7 +253,7 @@ class CdkInfraStack(core.Stack):
         bastion.instance.add_user_data(bastion_user_data)
 
 
-        asg_name = "{}-asg-{}".format(Constant.PROJECT_NAME, self._get_UUID())
+        asg_name = "{}-asg".format(Constant.PROJECT_NAME)
         asg = autoscaling.AutoScalingGroup(self, asg_name,
                                                 vpc=vpc,
                                                 vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC), # PUBLIC for debug
@@ -306,6 +307,5 @@ class CdkInfraStack(core.Stack):
 
 
     def _get_UUID(self, length=3):
-        # uid = str(uuid.uuid4())
-        # suid = ''.join(uid.split('-'))
-        return Constant.RANDOM_STR
+        uid = str(uuid.uuid4())
+        return ''.join(uid.split('-'))[:length]
