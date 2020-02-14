@@ -129,7 +129,7 @@ $ cdk bootstrap --profile 'region'
 $ cdk deploy --profile 'region'
 
 # 销毁
-$ cdk destory --profile 'region'
+$ cdk destroy --profile 'region'
 ```
 cdk 代码的说明，在[cdk_infra_stack.py](./cdk-infra/cdk_infra/cdk_infra_stack.py) 文件注释中。 
 
@@ -188,6 +188,10 @@ cdk-infra.UrlKibana = https://localhost:9200/_plugin/kibana/app/kibana
 如下图 点击发送按钮，发送一定数量的log日志， 日志中会随机产生一些错误日志， 当最近时间内有错误日志时，Lambda 会给SNS 发消息。 
 ![image](./images/005.png)
 
+### 通过堡垒机和Elasticsearch 建立隧道， 在本地访问kibana。
+ssh -i ~/id_rsa.pem ec2-user@ec2-161-189-69-79.cn-northwest-1.compute.amazonaws.com.cn  -N -L 9200:vpc-cdk-es-demo-w2a7o4s272gfzo2f3rn5mrlycu.cn-northwest-1.es.amazonaws.com.cn:443
+本地访问：<https://localhost:9200/_plugin/kibana/app/kibana>
+window本地如果没有ssh客户端，可以访问<https://github.com/PowerShell/Win32-OpenSSH/releases>
 
 ### Kibana 查询界面
 ![image](./images/006.png)
