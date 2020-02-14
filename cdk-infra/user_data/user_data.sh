@@ -20,5 +20,5 @@ Content-Disposition: attachment; filename="userdata.txt"
 #!/bin/bash
 /bin/echo "Hello World" >> /home/ec2-user/root.txt
 date >> /home/ec2-user/root.txt
-/home/ec2-user/start.sh {}  {} '{}' {}
+/home/ec2-user/start.sh {}  {} '{}' {} {}
 --//

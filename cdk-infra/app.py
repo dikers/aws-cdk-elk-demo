@@ -8,6 +8,7 @@ from constant import Constant
 
 env_cn = core.Environment(region=Constant.REGION_NAME)
 app = core.App()
-infra_stack = CdkInfraStack(app, "cdk-infra", env=env_cn)
+cdk_demo_stack = CdkInfraStack(app, "cdk-demo", env=env_cn,
+                description='CDK demo include:  Elastic search Alb AutoScaling Lambda SNS .')
 
 app.synth()

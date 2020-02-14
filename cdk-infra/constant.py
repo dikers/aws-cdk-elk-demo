@@ -10,8 +10,10 @@ class Constant:
     # 消息接收邮箱
     EMAIL_ADDRESS = 'you@email.com'
 
+    PROJECT_NAME = 'cdk-demo'
+
     # ES 集群的名称
-    ES_CLUSTER_NAME = "cdk-es-demo"
+    ES_CLUSTER_NAME = "cdk-demo-es"
 
     # ES index 名称
     ES_INDEX_NAME = 'log_index'
@@ -24,8 +26,11 @@ class Constant:
 
     #不同区域的共享AMI ID
 
-    ZHY_EC2_AMI_ID = 'ami-020b7614aa0e43830'
+    ZHY_EC2_AMI_ID = 'ami-08469f09ea12dce3a'
     BJ_EC2_AMI_ID = 'ami-085fcc092e0269581'
 
     #安装的region 名称
     REGION_NAME = 'cn-northwest-1'
+
+    # 防止资源重复
+    RANDOM_STR = '123'
