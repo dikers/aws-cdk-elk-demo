@@ -44,7 +44,7 @@ output {
       region => "_REGION_"
       aws_access_key_id => '_ES_AK_'
       aws_secret_access_key => '_ES_SK_'
-      index => "_INDEX_NAME_"
+      index => "_INDEX_NAME_%{+YYYY-MM}"
   }
 
  

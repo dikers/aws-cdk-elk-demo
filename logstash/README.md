@@ -243,7 +243,10 @@ export _LOG_PATH_='xxxxx'
 
 [官方教程](https://www.elastic.co/guide/en/kibana/7.1/tutorial-load-dataset.html)
 
+#  数据导出到 AWS S3中
 
+[官方介绍](https://www.elastic.co/guide/en/logstash/current/plugins-outputs-s3.html)
+[参考文档](https://www.jianshu.com/p/d2f86b0e09b3)
 
 
 # FAQ

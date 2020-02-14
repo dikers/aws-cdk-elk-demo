@@ -38,29 +38,16 @@ public class TestController {
 
 	@ResponseBody
 	@RequestMapping("/send")
-	public String send(Integer total, Integer tps) {
-//		if (tps == null) {
-//			tps = 1;
-//		}
-//		if (tps > 100) {
-//			tps = 100;
-//		}
+	public String send(Integer total) {
+
 		if (total == null) {
 			total = 1;
 		}
 		if (total > 100) {
 			total = 100;
 		}
-//		int sleep = 1000 / tps;
 		for (int i = 0; i < total; i++) {
 			logger.info(disposeLog());
-//			if (i < total) {
-//				try {
-//					Thread.sleep(sleep);
-//				} catch (InterruptedException e) {
-//					e.printStackTrace();
-//				}
-//			}
 		}
 		LocalDateTime now = LocalDateTime.now();
 		DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
@@ -73,8 +60,7 @@ public class TestController {
 
 	private String disposeLog() {
 		int linkId = (int) (Math.random() * (linkMax - linkMin) + linkMin);
-//		int devId = linkId + 10000;
-		String ip = "172.19.71.224";
+		String ip = LocalUtils.getRandomIp();
 		int errCode = 9999;
 		String errMsg = "执行成功";
 		int errId = (int) (Math.random() * (errMax - errMin) + errMin);
